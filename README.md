@@ -7,3 +7,9 @@ api routes
         - updateBuild     PATCH
     - create new entry(specific build row) in db
         - createBuild     POST
+
+
+to start server, after cloning this git branch
+    - create a .env file which should contain PORT and PostgreSQL DB string
+    - install dependencies by npm i
+    and run node index.js
