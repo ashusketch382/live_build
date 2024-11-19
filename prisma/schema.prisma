@@ -15,7 +15,7 @@ datasource db {
 
 model Build {
   id             Int       @id @default(autoincrement())
-  name           String
+  name           String    @unique
   content        String
   buildStartTime DateTime?
   onpremStatus   String

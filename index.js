@@ -1,10 +1,47 @@
 const express = require("express");
 require('dotenv').config();
 const {PrismaClient} = require("@prisma/client");
+const { WebSocketServer } = require("ws");
+const Websocket = require("ws");
+const http = require("http");
+const { Client } = require("pg");
+
 const prisma = new PrismaClient();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
+
+//create a http server
+const server = http.createServer(app);
+
+//create a websocket server using http server
+const wss = new WebSocketServer({ server });
+
+//configure the PostgreSQL client for listening DB triggers
+const pgClient = new Client({
+    connectionString: process.env.DATABASE_URL,
+});
+pgClient.connect();
+
+//Listen for notifications on build_status_update channel
+pgClient.query('LISTEN build_status_update');
+
+wss.on('connection', function connection(ws){
+    //get the error
+    ws.on('error', console.error);
+});
+
+//when a notification is recieved, broadcast it to WebSocket clients
+pgClient.on('notification', (msg) => {
+    const payload = JSON.parse(msg.payload);
+    console.log('Database notification received: ',payload);
+    // Broadcast the update to all WebSocket clients
+    wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(payload));
+        }
+    });
+})
 
 app.get('/allBuild', async (req,res) => {
     try {
@@ -59,16 +96,21 @@ app.post('/createBuild', async (req, res) => {
                 comments
             }
         });
-        console.log(build);
+        // console.log(build);
         res.status(200).json({
             message: "created build entry"
         });
     } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            err: error,
-            message: "bad request"
-        })
+        if (error.code === 'P2002') { // Prisma's unique constraint violation code
+            res.status(400).json({
+                message: "Build with the same name already exists",
+            });
+        } else {
+            res.status(500).json({
+                message: "Internal server error",
+                error,
+            });
+        }
     }
 });
 app.put('/build', async (req,res) => {
@@ -97,6 +139,6 @@ app.put('/build', async (req,res) => {
         })
     }
 })
-app.listen(process.env.PORT, ()=>{
-        console.log("server started on PORT 3000")
+server.listen(process.env.PORT, ()=>{
+        console.log("server started on PORT ", process.env.PORT)
     });
