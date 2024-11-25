@@ -1,13 +1,15 @@
 const express = require("express");
+const cors = require("cors");
 require('dotenv').config();
 const {PrismaClient} = require("@prisma/client");
 const { WebSocketServer } = require("ws");
-const Websocket = require("ws");
+const WebSocket = require("ws");
 const http = require("http");
 const { Client } = require("pg");
 
 const prisma = new PrismaClient();
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
 
