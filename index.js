@@ -9,7 +9,7 @@ const { Client } = require("pg");
 
 const prisma = new PrismaClient();
 const app = express();
-//app.use(cors());
+// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
 
@@ -135,6 +135,19 @@ app.put('/build', async (req,res) => {
         })
     } catch (error) {
         console.log(error);
+        res.status(500).json({
+            message: "something went wrong",
+            err: error
+        })
+    }
+})
+app.delete('/delete', async (req,res) => {
+    try {
+    const response = await prisma.build.deleteMany({})
+    res.status(200).json({
+        message: "Succefully deleted the data"
+    })
+    } catch (error) {
         res.status(500).json({
             message: "something went wrong",
             err: error
