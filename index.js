@@ -141,6 +141,30 @@ app.put('/build', async (req,res) => {
         })
     }
 })
+
+app.put('/startUpdateBuilds', async (req,res) => {
+    try {
+        const data = {
+            onpremStatus: "Build Waiting",
+            dockerStatus: "Build Waiting",
+            comments: "Build Waiting"
+        };
+        const build = await prisma.build.updateMany({
+            where: {},
+            data: data
+        })
+        res.status(200).json({
+            message: "successfully udpated the data",
+            data: build.count
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "something went wrong",
+            err: error
+        })
+    }
+})
 app.delete('/delete', async (req,res) => {
     try {
     const response = await prisma.build.deleteMany({})
