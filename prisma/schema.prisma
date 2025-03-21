@@ -18,6 +18,7 @@ model Build {
   name           String    @unique
   content        String
   buildStartTime DateTime?
+  buildEndTime   DateTime?
   onpremStatus   String
   dockerStatus   String
   comments       String?
