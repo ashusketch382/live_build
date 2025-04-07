@@ -145,6 +145,9 @@ app.put('/build', async (req,res) => {
 app.put('/startUpdateBuilds', async (req,res) => {
     try {
         const data = {
+            buildStartTime: new Date("1970-01-01T00:00:00Z"),
+            buildEndTime: new Date("1970-01-01T00:00:00Z"),
+            buildStatus: "Build Started",
             onpremStatus: "Build Waiting",
             dockerStatus: "Build Waiting",
             comments: "Build Waiting"
