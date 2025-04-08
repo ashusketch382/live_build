@@ -25,7 +25,6 @@ These are the backend API routes used by the frontend to interact with the datab
    git clone https://github.com/ashusketch382/live_build.git
    cd live_build
    npm install
-   node index.js
 ```
 
 ### Create Environment File
