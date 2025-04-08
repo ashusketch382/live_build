@@ -146,7 +146,10 @@ app.put('/startUpdateBuilds', async (req,res) => {
     try {
         const data = {
             buildStartTime: null,
-            buildEndTime: null
+            buildEndTime: null,
+            onpremStatus: "Build Waiting",
+            dockerStatus: "Build Waiting",
+            comments: "Build Waiting"
         };
         const build = await prisma.build.updateMany({
             where: {},
