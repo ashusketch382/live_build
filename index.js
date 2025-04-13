@@ -6,13 +6,14 @@ const { WebSocketServer } = require("ws");
 const WebSocket = require("ws");
 const http = require("http");
 const { Client } = require("pg");
-
+const client = require('prom-client');
+const { metricsMiddleware } = require("./metrics");
 const prisma = new PrismaClient();
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded());
-
+app.use(metricsMiddleware);
 //create a http server
 const server = http.createServer(app);
 
@@ -180,6 +181,11 @@ app.delete('/delete', async (req,res) => {
         })
     }
 })
+app.get("/metrics", async(req, res) => {
+    const metrics = await client.register.metrics();
+    res.set('Content-Type', client.register.contentType);
+    res.send(metrics);
+})
 server.listen(process.env.PORT, ()=>{
         console.log("server started on PORT ", process.env.PORT)
-    });
+});
