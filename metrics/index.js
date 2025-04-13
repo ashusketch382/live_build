@@ -12,12 +12,12 @@ const metricsMiddleware = (req, res ,next) => {
         requestCounter.inc({
             method: req.method,
             route: req.route ? req.route.path : req.path,
-            status_code: res.status_code
+            status_code: res.statusCode
         });
         httpRequestDurationMicroseconds.observe({
             method: req.method,
             route: req.route ? req.route.path : req.path,
-            status_code: res.status_code
+            status_code: res.statusCode
         }, endTime - startTime);
         activeRequestsGauge.dec();
     });
