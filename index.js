@@ -8,6 +8,7 @@ const http = require("http");
 const { Client } = require("pg");
 const client = require('prom-client');
 const { metricsMiddleware } = require("./metrics");
+const { activeConnections, totalConnections, messagesReceived } = require("./metrics/web_socket_requests");
 const prisma = new PrismaClient();
 const app = express();
 app.use(cors());
@@ -29,22 +30,6 @@ pgClient.connect();
 //Listen for notifications on build_status_update channel
 pgClient.query('LISTEN build_status_update');
 
-const activeConnections = new client.Gauge({
-    name: 'frontend_ws_active_clients',
-    help: 'Current number of WebSocket clients connected',
-  });
-  const totalConnections = new client.Counter({
-    name: 'frontend_ws_total_connections',
-    help: 'Total number of WebSocket connections established',
-  });
-  const messagesSent = new client.Counter({
-    name: 'frontend_ws_messages_sent_total',
-    help: 'Total messages sent to clients',
-  });
-  const messagesReceived = new client.Counter({
-    name: 'frontend_ws_messages_received_total',
-    help: 'Total messages received from clients',
-  });
 
 wss.on('connection', function connection(ws){
     activeConnections.inc();
