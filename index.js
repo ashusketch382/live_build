@@ -29,7 +29,32 @@ pgClient.connect();
 //Listen for notifications on build_status_update channel
 pgClient.query('LISTEN build_status_update');
 
+const activeConnections = new client.Gauge({
+    name: 'frontend_ws_active_clients',
+    help: 'Current number of WebSocket clients connected',
+  });
+  const totalConnections = new client.Counter({
+    name: 'frontend_ws_total_connections',
+    help: 'Total number of WebSocket connections established',
+  });
+  const messagesSent = new client.Counter({
+    name: 'frontend_ws_messages_sent_total',
+    help: 'Total messages sent to clients',
+  });
+  const messagesReceived = new client.Counter({
+    name: 'frontend_ws_messages_received_total',
+    help: 'Total messages received from clients',
+  });
+
 wss.on('connection', function connection(ws){
+    activeConnections.inc();
+    totalConnections.inc();
+    ws.on('message', (message) => {
+        messagesReceived.inc();
+    });
+    ws.on('close', () => {
+        activeConnections.dec();
+    })
     //get the error
     ws.on('error', console.error);
 });
