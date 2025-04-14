@@ -1,3 +1,4 @@
+const client = require('prom-client');
 const activeConnections = new client.Gauge({
     name: 'frontend_ws_active_clients',
     help: 'Current number of WebSocket clients connected',
