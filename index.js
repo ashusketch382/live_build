@@ -214,7 +214,7 @@ app.post("/snapshots", async (req, res) => {
     }
     console.log('Snapshot completed successfully!');
     res.status(200).json({
-        message: "successfully udpated the data",
+        message: "successfully took snapshot of the data",
         data: builds.length
     });
     } catch (error) {
