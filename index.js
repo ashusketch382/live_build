@@ -34,11 +34,13 @@ pgClient.query('LISTEN build_status_update');
 wss.on('connection', function connection(ws){
     activeConnections.inc();
     totalConnections.inc();
+    console.log("socket connection established");
     ws.on('message', (message) => {
         messagesReceived.inc();
     });
     ws.on('close', () => {
         activeConnections.dec();
+        console.log("socket connection removed");
     })
     //get the error
     ws.on('error', console.error);
@@ -189,6 +191,85 @@ app.delete('/delete', async (req,res) => {
             message: "something went wrong",
             err: error
         })
+    }
+})
+
+app.post("/snapshots", async (req, res) => {
+    try {
+        const builds = await prisma.build.findMany();
+    for (const build of builds) {
+        await prisma.buildSnapshot.create({
+            data: {
+                buildId: build.id,
+                name: build.name,
+                content: build.content,
+                buildStartTime: build.buildStartTime,
+                buildEndTime: build.buildEndTime,
+                onpremStatus: build.onpremStatus,
+                dockerStatus: build.dockerStatus,
+                comments: build.comments,
+                snapshotDate: new Date(),
+            },
+        });
+    }
+    console.log('Snapshot completed successfully!');
+    res.status(200).json({
+        message: "successfully udpated the data",
+        data: builds.length
+    });
+    } catch (error) {
+        console.error('Error taking snapshot:', error);
+        res.status(500).json({
+            message: "something went wrong",
+            err: error
+        });
+    }
+});
+
+app.get('/snapshots', async(req,res) => {
+    try {
+        const { date } = req.query;
+        const snapshotDate = new Date(date);
+        console.log(date);
+        const snapshots = await prisma.buildSnapshot.findMany({
+            where: {
+              snapshotDate: {
+                gte: new Date(snapshotDate.setUTCHours(0,0,0,0)),
+                lte: new Date(snapshotDate.setUTCHours(23,59,59,999)),
+              },
+            },
+          });
+        res.status(200).json({
+            data: snapshots,
+            message: "Succesfully fetched the snapshots"
+        })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            data: {},
+            message: "something went wrong",
+            err: error
+        })
+    }
+})
+
+app.delete("/deleteSnapshot", async (req,res) => {
+    try {
+        const response = await prisma.buildSnapshot.deleteMany({
+            where: {
+              snapshotDate: {
+                lt: new Date(new Date().setDate(new Date().getDate() - 90)),
+              },
+            },
+          });
+        res.status(200).json({
+            message: "Succefully deleted the old snapshot"
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "something went wrong",
+            err: error
+        });
     }
 })
 app.get("/metrics", async(req, res) => {

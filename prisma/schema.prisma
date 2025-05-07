@@ -24,3 +24,17 @@ model Build {
   comments       String?
   updatedAt      DateTime  @default(now()) @updatedAt
 }
+
+model BuildSnapshot {
+  id Int @id @default(autoincrement()) 
+  buildId Int 
+  name String 
+  content String 
+  buildStartTime DateTime? 
+  buildEndTime DateTime? 
+  onpremStatus String 
+  dockerStatus String 
+  comments String? 
+  snapshotDate DateTime 
+  createdAt DateTime @default(now()) 
+}
